@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} проект{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>{{ action }} проект
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Название проекта *</label>
+                            <input type="text" name="title" class="form-control" id="id_title" value="{{ form.title.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Описание *</label>
+                            <textarea name="description" class="form-control" id="id_description" rows="5" required>{{ form.description.value|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label">Категория</label>
+                            <input type="text" name="category" class="form-control" id="id_category" value="{{ form.category.value|default:'' }}" placeholder="Например: Веб-разработка">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label">Изображение *</label>
+                            {% if item and item.image %}
+                                <div class="mb-2">
+                                    <img src="{{ item.image.url }}" alt="Preview" style="max-width: 300px; max-height: 200px; object-fit: cover; border-radius: 5px;">
+                                </div>
+                            {% endif %}
+                            <input type="file" name="image" class="form-control" id="id_image" accept="image/*" {% if not item %}required{% endif %}>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_archive" class="form-label">Архив проекта</label>
+                            {% if item and item.archive %}
+                                <div class="mb-2">
+                                    <small class="text-muted">Текущий архив: <a href="{{ item.archive.url }}" target="_blank">{{ item.archive.name|slice:"20:" }}</a></small>
+                                </div>
+                            {% endif %}
+                            <input type="file" name="archive" class="form-control" id="id_archive" accept=".zip,.rar,.7z,.tar,.gz">
+                            <small class="form-text text-muted">Поддерживаемые форматы: ZIP, RAR, 7Z, TAR, GZ</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_date" class="form-label">Дата проекта *</label>
+                            <input type="date" name="date" class="form-control" id="id_date" value="{{ form.date.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Сохранить
+                            </button>
+                            <a href="{% url 'portfolio_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

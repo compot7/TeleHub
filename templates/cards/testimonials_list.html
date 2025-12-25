@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои отзывы{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="mb-4">
+        <h2>
+            <i class="fas fa-star me-2"></i>Мои отзывы
+        </h2>
+        <p class="text-muted">Отзывы, которые вы оставили на визитках других пользователей</p>
+    </div>
+    
+    {% if items %}
+        <div class="row">
+            {% for item in items %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-id-card me-1"></i>На визитке: 
+                                    <a href="{% url 'card_detail' item.user.username %}">{{ item.user.get_full_name|default:item.user.username }}</a>
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                {% if item.author_photo %}
+                                    <img src="{{ item.author_photo.url }}" alt="{{ item.author_name }}" 
+                                         class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1">{{ item.author_name }}</h6>
+                                    {% if item.author_position %}
+                                        <small class="text-muted">{{ item.author_position }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="card-text">"{{ item.text|truncatewords:30 }}"</p>
+                            <div class="d-flex justify-content-end">
+                                <small class="text-muted">{{ item.created_at|date:"d.m.Y" }}</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <form method="post" action="{% url 'testimonial_delete' item.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Удалить отзыв?')">
+                                    <i class="fas fa-trash me-1"></i> Удалить отзыв
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>Вы еще не оставляли отзывы на визитках других пользователей.
+            <p class="mt-2 mb-0">
+                <a href="{% url 'home' %}" class="alert-link">Найти визитки других пользователей</a>
+            </p>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Назад в кабинет
+        </a>
+    </div>
+</div>
+{% endblock %}
+

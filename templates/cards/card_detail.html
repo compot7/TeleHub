@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ card_user.get_full_name|default:card_user.username }} - Визитка{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --accent-color: {{ card_user.accent_color }};
+    }
+    
+    body {
+        {% if card_user.theme == 'dark' %}
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+        {% else %}
+        background-color: #ffffff;
+        color: #212529;
+        {% endif %}
+    }
+    
+    .card-header-section {
+        {% if card_user.background_image %}
+        background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ card_user.background_image.url }}');
+        {% else %}
+        background: linear-gradient(135deg, var(--accent-color) 0%, #0056b3 100%);
+        {% endif %}
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+    }
+    
+    .avatar-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid white;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+    
+    .section-tab {
+        cursor: pointer;
+        padding: 15px 30px;
+        border: none;
+        background: transparent;
+        color: inherit;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .section-tab.active {
+        border-bottom-color: var(--accent-color);
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+    
+    .section-content {
+        display: none;
+        padding: 40px 20px;
+    }
+    
+    .section-content.active {
+        display: block;
+    }
+    
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .portfolio-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+        cursor: pointer;
+    }
+    
+    .portfolio-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .portfolio-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .testimonial-card {
+        background: {% if card_user.theme == 'dark' %}#2a2a2a{% else %}#f8f9fa{% endif %};
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .contact-icon {
+        font-size: 2rem;
+        color: var(--accent-color);
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card-header-section">
+    <div class="container">
+        {% if card_user.avatar %}
+            <img src="{{ card_user.avatar.url }}" alt="{{ card_user.username }}" class="avatar-large">
+        {% else %}
+            <div class="avatar-large mx-auto bg-white d-flex align-items-center justify-content-center">
+                <i class="fas fa-user fa-4x" style="color: var(--accent-color);"></i>
+            </div>
+        {% endif %}
+        <h1 class="display-4 mb-3">{{ card_user.get_full_name|default:card_user.username }}</h1>
+        {% if card_user.title %}
+            <p class="lead">{{ card_user.title }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex flex-wrap justify-content-center border-bottom mb-4" id="section-tabs">
+                <button class="section-tab active" data-section="about">
+                    <i class="fas fa-user me-2"></i>Обо мне
+                </button>
+                <button class="section-tab" data-section="portfolio">
+                    <i class="fas fa-briefcase me-2"></i>Портфолио
+                </button>
+                <button class="section-tab" data-section="testimonials">
+                    <i class="fas fa-star me-2"></i>Отзывы
+                </button>
+                <button class="section-tab" data-section="contacts">
+                    <i class="fas fa-envelope me-2"></i>Контакты
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Секция "Обо мне" -->
+    <div class="section-content active" id="section-about">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                {% if card_user.bio %}
+                    <h3 class="mb-4">О себе</h3>
+                    <p class="lead">{{ card_user.bio|linebreaks }}</p>
+                {% endif %}
+                
+                {% if skills_list %}
+                    <h4 class="mt-5 mb-3">Навыки</h4>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in skills_list %}
+                            <span class="badge bg-primary" style="background-color: var(--accent-color) !important; padding: 8px 15px; font-size: 0.9rem;">
+                                {{ skill|truncatechars:30 }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Секция "Портфолио" -->
+    <div class="section-content" id="section-portfolio">
+        {% if portfolio_items %}
+            <div class="portfolio-grid">
+                {% for item in portfolio_items %}
+                    <div class="portfolio-card" data-bs-toggle="modal" data-bs-target="#portfolioModal{{ item.id }}">
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                        <div class="p-3">
+                            <h5>{{ item.title }}</h5>
+                            {% if item.category %}
+                                <span class="badge bg-secondary">{{ item.category }}</span>
+                            {% endif %}
+                            <p class="text-muted small mt-2">{{ item.description|truncatewords:20 }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal для проекта -->
+                    <div class="modal fade" id="portfolioModal{{ item.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{{ item.title }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img src="{{ item.image.url }}" class="img-fluid mb-3" alt="{{ item.title }}">
+                                    <p>{{ item.description|linebreaks }}</p>
+                                    {% if item.archive %}
+                                        <div class="mt-3">
+                                            <a href="{{ item.archive.url }}" download class="btn btn-primary">
+                                                <i class="fas fa-download me-2"></i>Скачать архив проекта
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Портфолио пока пусто</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Секция "Отзывы" -->
+    <div class="section-content" id="section-testimonials">
+        {% if can_leave_testimonial and testimonial_form %}
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-star me-2"></i>Оставить отзыв
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="testimonial_submit" value="1">
+                                
+                                <div class="mb-3">
+                                    <label for="id_text" class="form-label">Текст отзыва *</label>
+                                    <textarea name="text" class="form-control {% if testimonial_form.text.errors %}is-invalid{% endif %}" 
+                                              id="id_text" rows="4" required placeholder="Ваш отзыв...">{{ testimonial_form.text.value|default:'' }}</textarea>
+                                    {% if testimonial_form.text.errors %}
+                                        <div class="invalid-feedback">{{ testimonial_form.text.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Отправить отзыв
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if testimonials %}
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h4 class="mb-4">Отзывы</h4>
+                    {% for testimonial in testimonials %}
+                        <div class="testimonial-card">
+                            <div class="d-flex align-items-start mb-3">
+                                {% if testimonial.author_photo %}
+                                    <img src="{{ testimonial.author_photo.url }}" alt="{{ testimonial.author_name }}" 
+                                         class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 60px; height: 60px; background-color: var(--accent-color) !important;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ testimonial.author_name }}</h6>
+                                    {% if testimonial.author_position %}
+                                        <small class="text-muted">{{ testimonial.author_position }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="mb-0">"{{ testimonial.text }}"</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Отзывы пока отсутствуют</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Секция "Контакты" -->
+    <div class="section-content" id="section-contacts">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="mb-4">Связаться со мной</h3>
+                
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% if card_user.phone %}
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-phone contact-icon me-3"></i>
+                            <a href="tel:{{ card_user.phone }}" class="text-decoration-none">{{ card_user.phone }}</a>
+                        </div>
+                    {% endif %}
+                    
+                    {% if card_user.email_public %}
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope contact-icon me-3"></i>
+                            <a href="mailto:{{ card_user.email_public }}" class="text-decoration-none">{{ card_user.email_public }}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Переключение секций
+    document.querySelectorAll('.section-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const section = this.dataset.section;
+            
+            // Убираем активный класс у всех табов и секций
+            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            
+            // Добавляем активный класс выбранным
+            this.classList.add('active');
+            document.getElementById('section-' + section).classList.add('active');
+        });
+    });
+    
+    // Карта (если есть координаты)
+    {% if card_user.location_lat and card_user.location_lng %}
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: {{ card_user.location_lat }}, lng: {{ card_user.location_lng }}},
+            zoom: 15
+        });
+        
+        new google.maps.Marker({
+            position: {lat: {{ card_user.location_lat }}, lng: {{ card_user.location_lng }}},
+            map: map,
+            title: '{{ card_user.get_full_name|default:card_user.username }}'
+        });
+    }
+    {% endif %}
+</script>
+
+{% if card_user.location_lat and card_user.location_lng %}
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+{% endif %}
+{% endblock %}
+

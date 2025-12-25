@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Социальные ссылки{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-share-alt me-2"></i>Добавить социальную ссылку
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="platform" class="form-label">Платформа</label>
+                                <select name="platform" class="form-select" id="platform" required>
+                                    <option value="">Выберите...</option>
+                                    <option value="telegram">Telegram</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="github">GitHub</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="vk">VKontakte</option>
+                                    <option value="website">Веб-сайт</option>
+                                    <option value="other">Другое</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="url" class="form-label">URL</label>
+                                <input type="url" name="url" class="form-control" id="url" required placeholder="https://...">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="icon" class="form-label">Иконка</label>
+                                <input type="text" name="icon" class="form-control" id="icon" placeholder="fa-icon">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Добавить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if links %}
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">Ваши социальные ссылки</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for link in links %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fab fa-{{ link.platform }} me-2"></i>
+                                        <strong>{{ link.get_platform_display }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ link.url }}</small>
+                                    </div>
+                                    <form method="post" action="{% url 'social_link_delete' link.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить ссылку?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>У вас пока нет социальных ссылок.
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Назад в кабинет
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
