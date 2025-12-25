@@ -11,7 +11,11 @@ urlpatterns = [
     path('', include('cards.urls')),
 ]
 
+# Раздача медиа-файлов (нужно для Render, так как нет отдельного веб-сервера)
+# В продакшене рекомендуется использовать облачное хранилище (S3, Cloudinary и т.д.)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Раздача статических файлов только в DEBUG режиме (в продакшене используется WhiteNoise)
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
