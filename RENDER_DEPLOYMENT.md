@@ -342,3 +342,4 @@ python manage.py loaddata backup.json
 
 **Удачи с деплоем! 🚀**
 
+

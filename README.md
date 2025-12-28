@@ -36,7 +36,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Приложение будет доступно по адресу: http://127.0.0.1:8000/
+Приложение будет доступно по адресу: https://telehub-r9ft.onrender.com/
 
 ## Функциональность
 
